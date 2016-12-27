@@ -11,8 +11,8 @@ import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
 
 public class MongoConfigurationBuilder {
 
-    private String                      host        = "localhost";
-    private int                         port        = 27017;
+    private String                      host;
+    private int                         port;
     private String                      databaseName;
     private MongoClientOptions          options;
     private CollectionNamingStrategy    collectionNamingStrategy;
