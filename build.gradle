@@ -29,7 +29,7 @@ project.ext.versions = [
     mongodb: '3.4.1',
     jackson: '2.8.5',
     gson: '2.8.0',
-    reflections: '0.9.9'
+    reflections: '0.9.10'
 ]
 
 dependencies {
