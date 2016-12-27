@@ -6,8 +6,6 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
-import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
-
 /**
  * Simple wrapper for the configuration needed to create a {@link net.netzgut.integral.mongo.services.MongoService}.
  */
@@ -20,7 +18,5 @@ public interface MongoConfiguration {
     MongoClientOptions getClientOptions();
 
     List<MongoCredential> getCredentials();
-
-    CollectionNamingStrategy getCollectionNamingStrategy();
 
 }

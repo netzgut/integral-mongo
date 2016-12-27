@@ -27,18 +27,23 @@ import net.netzgut.integral.mongo.annotations.Collection;
 import net.netzgut.integral.mongo.annotations.Index;
 import net.netzgut.integral.mongo.configuration.MongoConfiguration;
 import net.netzgut.integral.mongo.services.MongoService;
+import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
 
 public class MongoServiceImplementation implements MongoService, Closeable {
 
-    private static final Logger      log = LoggerFactory.getLogger(MongoServiceImplementation.class);
+    private static final Logger            log = LoggerFactory.getLogger(MongoServiceImplementation.class);
 
-    private final MongoConfiguration configuration;
+    private final MongoConfiguration       configuration;
 
-    private final MongoClient        mongoClient;
-    private final MongoDatabase      defaultDatabase;
+    private final MongoClient              mongoClient;
+    private final MongoDatabase            defaultDatabase;
 
-    public MongoServiceImplementation(MongoConfiguration configuration) {
+    private final CollectionNamingStrategy collectionNamingStrategy;
+
+    public MongoServiceImplementation(MongoConfiguration configuration,
+                                      CollectionNamingStrategy collectionNamingStrategy) {
         this.configuration = configuration;
+        this.collectionNamingStrategy = collectionNamingStrategy;
         if (configuration.getCredentials().isEmpty()) {
             this.mongoClient = new MongoClient(configuration.getServerAddress(), configuration.getClientOptions());
 
@@ -95,7 +100,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
     @Override
     public String getCollectionName(String collectionName) {
-        return this.configuration.getCollectionNamingStrategy().name(collectionName);
+        return this.collectionNamingStrategy.name(collectionName);
     }
 
     @Override

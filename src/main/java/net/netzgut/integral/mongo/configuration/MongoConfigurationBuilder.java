@@ -7,15 +7,12 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 
-import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
-
 public class MongoConfigurationBuilder {
 
     private String                      host;
     private int                         port;
     private String                      databaseName;
     private MongoClientOptions          options;
-    private CollectionNamingStrategy    collectionNamingStrategy;
 
     private final List<MongoCredential> credentials = new ArrayList<>();
 
@@ -123,16 +120,6 @@ public class MongoConfigurationBuilder {
     }
 
     /**
-     * Sets the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy} used for
-     * getting collections.
-     */
-    public MongoConfigurationBuilder collectionNamingStrategy(CollectionNamingStrategy strategy) {
-        this.collectionNamingStrategy = strategy;
-
-        return this;
-    }
-
-    /**
      * Builds a {@link net.netzgut.integral.mongo.servics.MongoService} instance
      * based on the provided arguments / with senseful fallbacks
      */
@@ -152,14 +139,6 @@ public class MongoConfigurationBuilder {
             @Override
             public List<MongoCredential> getCredentials() {
                 return MongoConfigurationBuilder.this.credentials;
-            }
-
-            @Override
-            public CollectionNamingStrategy getCollectionNamingStrategy() {
-                if (MongoConfigurationBuilder.this.collectionNamingStrategy == null) {
-                    collectionNamingStrategy(originalName -> originalName);
-                }
-                return MongoConfigurationBuilder.this.collectionNamingStrategy;
             }
 
             @Override
