@@ -39,9 +39,15 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
     public MongoServiceImplementation(MongoConfiguration configuration) {
         this.configuration = configuration;
-        this.mongoClient = new MongoClient(configuration.getServerAddress(),
-                                           configuration.getCredentials(),
-                                           configuration.getClientOptions());
+        if (configuration.getCredentials().isEmpty()) {
+            this.mongoClient = new MongoClient(configuration.getServerAddress(), configuration.getClientOptions());
+
+        }
+        else {
+            this.mongoClient = new MongoClient(configuration.getServerAddress(),
+                                               configuration.getCredentials(),
+                                               configuration.getClientOptions());
+        }
         this.defaultDatabase = this.mongoClient.getDatabase(configuration.getDatabaseName());
     }
 
@@ -75,7 +81,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
         if (annotation == null) {
             String message = String.format("Annotation '@Collection' not present on class '%s'", entityClass.getName());
-            MongoServiceImplementation.log.error(message);
+            log.error(message);
             throw new UnsupportedOperationException(message);
         }
 
