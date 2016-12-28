@@ -29,7 +29,7 @@ project.ext.versions = [
     mongodb: '3.4.1',
     jackson: '2.8.5',
     gson: '2.8.0',
-    reflections: '0.9.10'
+    fastClasspathScanner: '2.0.9'
 ]
 
 dependencies {
@@ -38,9 +38,7 @@ dependencies {
     compile "org.apache.tapestry:tapestry-ioc:${versions.tapestry}"
     compile "org.mongodb:mongo-java-driver:${versions.mongodb}"
     
-    // We need to use 0.9.9 - assuming concurrency problem with result "zip file closed"
-    // See: https://github.com/ronmamo/reflections/issues/81
-    compile "org.reflections:reflections:${versions.reflections}"
+    compile "io.github.lukehutch:fast-classpath-scanner:${versions.fastClasspathScanner}"
 
     provided "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
     provided "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}"
