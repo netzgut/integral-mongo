@@ -55,10 +55,10 @@ public interface MongoService {
 
     void setupCollection(MongoDatabase db, Class<?> entityClass, String collectionName);
 
-    default void autoSetup(String packageName) {
-        autoSetup(getDefaultDatabase(), packageName);
+    default void autoSetup(String... packageRestrictions) {
+        autoSetup(getDefaultDatabase(), packageRestrictions);
     }
 
-    void autoSetup(MongoDatabase db, String packageName);
+    void autoSetup(MongoDatabase db, String... packageRestrictions);
 
 }

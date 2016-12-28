@@ -4,15 +4,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.bson.Document;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +17,7 @@ import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.CreateCollectionOptions;
 import com.mongodb.client.model.IndexOptions;
 
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import net.netzgut.integral.mongo.annotations.Collection;
 import net.netzgut.integral.mongo.annotations.Index;
 import net.netzgut.integral.mongo.configuration.MongoConfiguration;
@@ -33,8 +28,6 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
     private static final Logger            log = LoggerFactory.getLogger(MongoServiceImplementation.class);
 
-    private final MongoConfiguration       configuration;
-
     private final MongoClient              mongoClient;
     private final MongoDatabase            defaultDatabase;
 
@@ -42,11 +35,9 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
     public MongoServiceImplementation(MongoConfiguration configuration,
                                       CollectionNamingStrategy collectionNamingStrategy) {
-        this.configuration = configuration;
         this.collectionNamingStrategy = collectionNamingStrategy;
         if (configuration.getCredentials().isEmpty()) {
             this.mongoClient = new MongoClient(configuration.getServerAddress(), configuration.getClientOptions());
-
         }
         else {
             this.mongoClient = new MongoClient(configuration.getServerAddress(),
@@ -190,29 +181,13 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public void autoSetup(MongoDatabase db, String packageName) {
-        MongoServiceImplementation.log.debug("autoSetup(DB: {}, Package: {}", db.getName(), packageName);
+    public void autoSetup(MongoDatabase db, String... packageRestrictions) {
+        log.debug("autoSetup(DB: {}, Package restrictions: {}", db.getName(), packageRestrictions);
 
-        List<ClassLoader> classLoadersList = new ArrayList<>();
-        ClassLoader contextClassLoader = ClasspathHelper.contextClassLoader();
-        classLoadersList.add(contextClassLoader);
-
-        ClassLoader staticClassLoader = ClasspathHelper.staticClassLoader();
-        if (staticClassLoader != contextClassLoader) {
-            classLoadersList.add(staticClassLoader);
-        }
-
-        ConfigurationBuilder configuration =
-            new ConfigurationBuilder().setScanners(new SubTypesScanner(false), new TypeAnnotationsScanner())
-                                      .addClassLoaders(classLoadersList)
-                                      .setUrls(ClasspathHelper.forPackage(packageName));
-        Reflections reflections = new Reflections(configuration);
-
-        Set<Class<?>> collections = reflections.getTypesAnnotatedWith(Collection.class);
-        collections.forEach(collection -> {
-            Collection annotation = collection.getAnnotation(Collection.class);
+        new FastClasspathScanner(packageRestrictions).matchClassesWithAnnotation(Collection.class, matchingClass -> {
+            Collection annotation = matchingClass.getAnnotation(Collection.class);
             if (annotation.autoSetup()) {
-                this.setupCollection(db, collection, annotation.value());
+                this.setupCollection(db, matchingClass, annotation.value());
             }
         });
     }
