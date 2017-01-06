@@ -1,21 +1,25 @@
-group 'net.netzgut.integral'
-version '0.0.1-SNAPSHOT'
-
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'nebula.provided-base'
-
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
 buildscript {
     repositories {
         mavenCentral()
-        jcenter()
-        mavenLocal()
     }
-    dependencies { classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:3.1.0' }
 }
+
+plugins {
+    id 'java'
+    id 'maven'
+    id 'nebula.provided-base' version '3.1.0'
+    id 'com.github.hierynomus.license' version '0.13.1'
+}
+
+group 'net.netzgut.integral'
+version '0.0.1-SNAPSHOT'
+description 'A MongoDB Driver helper'
+
+project.ext.inceptionYear = '2016'
+project.ext.github = 'integral-mongo'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     mavenCentral()
@@ -24,12 +28,14 @@ repositories {
 }
 
 project.ext.versions = [
+    // compile
     slf4j: '1.7.21',
     tapestry: '5.4.1',
     mongodb: '3.4.1',
+    fastClasspathScanner: '2.0.9',
+    //provided
     jackson: '2.8.5',
-    gson: '2.8.0',
-    fastClasspathScanner: '2.0.9'
+    gson: '2.8.0'
 ]
 
 dependencies {
@@ -37,7 +43,7 @@ dependencies {
     compile "org.slf4j:slf4j-log4j12:${versions.slf4j}"
     compile "org.apache.tapestry:tapestry-ioc:${versions.tapestry}"
     compile "org.mongodb:mongo-java-driver:${versions.mongodb}"
-    
+
     compile "io.github.lukehutch:fast-classpath-scanner:${versions.fastClasspathScanner}"
 
     provided "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
@@ -45,19 +51,17 @@ dependencies {
     provided "com.google.code.gson:gson:${versions.gson}"
 }
 
-
-task wrapper(type: Wrapper) { gradleVersion = '3.2' }
-
+task wrapper(type: Wrapper) { gradleVersion = '3.2.1' }
 
 task pom {
     doLast {
         pom {
             packaging = 'jar'
             project {
-                inceptionYear '2016'
+                inceptionYear inceptionYear
                 name rootProject.name
-                description 'A MongoDB Driver helper'
-                url 'https://github.com/netzgut/integral-mongo'
+                description project.description
+                url "https://github.com/netzgut/$github"
                 properties { 'project.build.sourceEncoding' 'UTF-8' }
                 licenses {
                     license {
@@ -67,9 +71,9 @@ task pom {
                     }
                 }
                 scm {
-                    url 'https://github.com/netzgut/integral-mongo'
-                    connection 'scm:git:git://github.com/netzgut/integral-mongo.git'
-                    developerConnection 'scm:git:git@github.com:netzgut/integral-mongo.git'
+                    url "https://github.com/netzgut/$github"
+                    connection "scm:git:git://github.com/netzgut/${github}.git"
+                    developerConnection "scm:git:git@github.com:netzgut/${github}.git"
                 }
             }
         }.withXml { xmlProvider ->
@@ -80,11 +84,6 @@ task pom {
             def mavenCompilerPluginConfiguration = mavenCompilerPlugin.appendNode('configuration')
             mavenCompilerPluginConfiguration.appendNode('source').value = sourceCompatibility
             mavenCompilerPluginConfiguration.appendNode('target').value = targetCompatibility
-
-            def mavenSurefirePlugin = plugins.appendNode('plugin')
-            mavenSurefirePlugin.appendNode('artifactId').value = 'maven-surfire-plugin'
-            mavenSurefirePlugin.appendNode('version').value = '2.19.1'
-            mavenSurefirePlugin.appendNode('configuration')
         }.writeTo('pom.xml')
     }
 }
@@ -109,4 +108,10 @@ uploadArchives {
             }
         }
     }
+}
+
+license {
+    header rootProject.file('src/main/resources/META-INF/LICENSE.txt')
+    strictCheck true
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
 }
