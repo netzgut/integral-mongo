@@ -26,23 +26,45 @@ public interface MongoService {
 
     MongoDatabase getDatabase(String database);
 
-    String getCollectionName(Class<?> entityClass);
+    String getCollectionName(Class<?> entityClass, boolean ignoreNamingStrategy);
+
+    default String getCollectionName(Class<?> entityClass) {
+        return getCollectionName(entityClass, false);
+    }
 
     String getCollectionName(String collectionName);
 
+    default MongoCollection<Document> getCollection(Class<?> entityClass, boolean ignoreNamingStrategy) {
+        return getCollection(getDefaultDatabase(), entityClass, ignoreNamingStrategy);
+    }
+
     default MongoCollection<Document> getCollection(Class<?> entityClass) {
-        return getCollection(getDefaultDatabase(), entityClass);
+        return getCollection(getDefaultDatabase(), entityClass, false);
+    }
+
+    default MongoCollection<Document> getCollection(String collectionName, boolean ignoreNamingStrategy) {
+        return getCollection(getDefaultDatabase(), collectionName, ignoreNamingStrategy);
     }
 
     default MongoCollection<Document> getCollection(String collectionName) {
-        return getCollection(getDefaultDatabase(), collectionName);
+        return getCollection(getDefaultDatabase(), collectionName, false);
+    }
+
+    default MongoCollection<Document> getCollection(MongoDatabase db,
+                                                    Class<?> entityClass,
+                                                    boolean ignoreNamingStrategy) {
+        return getCollection(db, getCollectionName(entityClass), ignoreNamingStrategy);
     }
 
     default MongoCollection<Document> getCollection(MongoDatabase db, Class<?> entityClass) {
         return getCollection(db, getCollectionName(entityClass));
     }
 
-    MongoCollection<Document> getCollection(MongoDatabase db, String collectionName);
+    MongoCollection<Document> getCollection(MongoDatabase db, String collectionName, boolean ignoreNamingStrategy);
+
+    default MongoCollection<Document> getCollection(MongoDatabase db, String collectionName) {
+        return getCollection(db, collectionName, false);
+    }
 
     default void setupCollection(Class<?> entityClass) {
         setupCollection(getDefaultDatabase(), entityClass);

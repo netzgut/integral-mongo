@@ -82,7 +82,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public String getCollectionName(Class<?> entityClass) {
+    public String getCollectionName(Class<?> entityClass, boolean ignoreNamingStrategy) {
         if (entityClass == null) {
             log.error("Entity Class can't be null");
             throw new IllegalArgumentException("Entity Class can't be null");
@@ -101,6 +101,10 @@ public class MongoServiceImplementation implements MongoService, Closeable {
             collectionName = entityClass.getName();
         }
 
+        if (ignoreNamingStrategy) {
+            return collectionName;
+        }
+
         return getCollectionName(collectionName);
     }
 
@@ -110,7 +114,9 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public MongoCollection<Document> getCollection(MongoDatabase db, String collectionName) {
+    public MongoCollection<Document> getCollection(MongoDatabase db,
+                                                   String collectionName,
+                                                   boolean ignoreNamingStrategy) {
         if (db == null) {
             log.error("Database can't be null");
             throw new IllegalArgumentException("Database can't be null");
@@ -121,7 +127,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
             throw new IllegalArgumentException("Collection name can't be blank");
         }
 
-        String finalCollectionName = getCollectionName(collectionName);
+        String finalCollectionName = ignoreNamingStrategy ? collectionName : getCollectionName(collectionName);
 
         return db.getCollection(finalCollectionName);
     }
