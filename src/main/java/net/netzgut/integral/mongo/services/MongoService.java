@@ -22,80 +22,179 @@ import com.mongodb.client.MongoDatabase;
 
 public interface MongoService {
 
+    /**
+     * Returns the default database provided by the configuration.
+     */
     MongoDatabase getDefaultDatabase();
 
+    /**
+     * Returns a specific database.
+     */
     MongoDatabase getDatabase(String database);
 
+    /**
+     * Returns a Collection name by extracting the name from the entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     * @param ignoreNamingStrategy Ignores the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * You should prefer using the a strategy, though.
+     */
     String getCollectionName(Class<?> entityClass, boolean ignoreNamingStrategy);
 
+    /**
+     * Returns a Collection name by extracting the name from the entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     */
     default String getCollectionName(Class<?> entityClass) {
         return getCollectionName(entityClass, false);
     }
 
+    /**
+     * Returns a Collection name by name and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     */
     String getCollectionName(String collectionName);
 
+    /**
+     * Returns a Mongo Collection from the default database by extracting the name from the entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     * @param ignoreNamingStrategy Ignores the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * You should prefer using the a strategy, though.
+     * @return
+     */
     default MongoCollection<Document> getCollection(Class<?> entityClass, boolean ignoreNamingStrategy) {
         return getCollection(getDefaultDatabase(), entityClass, ignoreNamingStrategy);
     }
 
+    /**
+     * Returns a Collection from the default database by extracting the name from the entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     */
     default MongoCollection<Document> getCollection(Class<?> entityClass) {
         return getCollection(getDefaultDatabase(), entityClass, false);
     }
 
+    /**
+     * Returns a Collection from the default database by name and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param ignoreNamingStrategy Ignores the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * You should prefer using the a strategy, though.
+     */
     default MongoCollection<Document> getCollection(String collectionName, boolean ignoreNamingStrategy) {
         return getCollection(getDefaultDatabase(), collectionName, ignoreNamingStrategy);
     }
 
+    /**
+     * Returns a Collection from the default database by name and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     */
     default MongoCollection<Document> getCollection(String collectionName) {
         return getCollection(getDefaultDatabase(), collectionName, false);
     }
 
+    /**
+     * Returns a Collection from a specific Database by entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     * @param ignoreNamingStrategy Ignores the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * You should prefer using the a strategy, though.
+     */
     default MongoCollection<Document> getCollection(MongoDatabase db,
                                                     Class<?> entityClass,
                                                     boolean ignoreNamingStrategy) {
         return getCollection(db, getCollectionName(entityClass), ignoreNamingStrategy);
     }
 
+    /**
+     * Returns a Collection from a specific Database by entity class and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     */
     default MongoCollection<Document> getCollection(MongoDatabase db, Class<?> entityClass) {
         return getCollection(db, getCollectionName(entityClass));
     }
 
+    /**
+     * Returns a Collection from a specific Database by name and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     * @param ignoreNamingStrategy Ignores the {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * You should prefer using the a strategy, though.
+     */
     MongoCollection<Document> getCollection(MongoDatabase db, String collectionName, boolean ignoreNamingStrategy);
 
+    /**
+     * Returns a Collection from a specific Database by name and the
+     * {@link net.netzgut.integral.mongo.strategies.CollectionNamingStrategy}.
+     * @param entityClass A class that might be annotated with {@link net.netzgut.integral.mongo.annotations.Collection}
+     */
     default MongoCollection<Document> getCollection(MongoDatabase db, String collectionName) {
         return getCollection(db, collectionName, false);
     }
 
+    /**
+     * Setups a Collection in the default database based on it's annotations.
+     */
     default void setupCollection(Class<?> entityClass) {
         setupCollection(getDefaultDatabase(), entityClass);
     }
 
+    /**
+     * Setups a Collection in the default database based on it's annotations and overrides the Collection name.
+     */
     default void setupCollection(Class<?> entityClass, String collectionName) {
         setupCollection(getDefaultDatabase(), entityClass, collectionName);
     }
 
+    /**
+     * Caps a Collection in the default database to a specific size.
+     */
     default void capCollection(Class<?> entityClass, long sizeInBytes) {
         capCollection(getDefaultDatabase(), entityClass, sizeInBytes);
     }
 
+    /**
+     * Caps a Collection in the default database to a specific size.
+     */
     default void capCollection(String collectionName, long sizeInBytes) {
         capCollection(getDefaultDatabase(), collectionName, sizeInBytes);
     }
 
+    /**
+     * Caps a Collection in a specific database to a specific size.
+     */
     default void capCollection(MongoDatabase db, Class<?> entityClass, long sizeInBytes) {
         capCollection(db, getCollectionName(entityClass), sizeInBytes);
     }
 
+    /**
+     * Caps a Collection in a specific database to a specific size.
+     */
     void capCollection(MongoDatabase db, String collectionName, long sizeInBytes);
 
+    /**
+     * Setups a Collection in a specific Database based on it's annotations.
+     */
     void setupCollection(MongoDatabase db, Class<?> entityClass);
 
+    /**
+     * Setups a Collection in a specific database based on it's annotations and overrides the Collection name.
+     */
     void setupCollection(MongoDatabase db, Class<?> entityClass, String collectionName);
 
+    /**
+     * Setups all Collections in the default database based on classes found in the package restrictions.
+     */
     default void autoSetup(String... packageRestrictions) {
         autoSetup(getDefaultDatabase(), packageRestrictions);
     }
 
+    /**
+     * Setups all Collections in a specific database based on classes found in the package restrictions.
+     */
     void autoSetup(MongoDatabase db, String... packageRestrictions);
 
 }
