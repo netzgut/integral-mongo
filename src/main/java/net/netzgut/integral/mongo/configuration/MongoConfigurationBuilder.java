@@ -16,20 +16,23 @@
 package net.netzgut.integral.mongo.configuration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.event.ServerMonitorListener;
 
 public class MongoConfigurationBuilder {
 
-    private String                      host;
-    private int                         port;
-    private String                      databaseName;
-    private MongoClientOptions          options;
-
-    private final List<MongoCredential> credentials = new ArrayList<>();
+    private String                            host;
+    private int                               port;
+    private String                            databaseName;
+    private MongoClientOptions                options;
+    private final List<ServerMonitorListener> serverMonitorListeners = new ArrayList<>();
+    private final List<MongoCredential>       credentials            = new ArrayList<>();
 
     /**
      * Creates a builder for {@link net.netzgut.integral.mongo.services.MongoServiceImplementation}
@@ -135,6 +138,23 @@ public class MongoConfigurationBuilder {
     }
 
     /**
+     * Attach {@link com.mongodb.event.ServerMonitorListener}.
+     * You can build a ServerMonitorListener with {@link net.netzgut.integral.mongo.configuration.ServerMonitorBuilder}.
+     */
+    public MongoConfigurationBuilder serverMonitor(ServerMonitorListener... monitors) {
+        if (this.options != null) {
+            throw new IllegalArgumentException("MongoClient options already set. "
+                                               + "The ServerMonitorListener has to be included into the options "
+                                               + "so either add it to your provided options or set the monitor "
+                                               + "and use the default MongoClientOptions this builder will build.");
+        }
+
+        this.serverMonitorListeners.addAll(Arrays.asList(monitors));
+
+        return this;
+    }
+
+    /**
      * Builds a {@link net.netzgut.integral.mongo.servics.MongoService} instance
      * based on the provided arguments / with senseful fallbacks
      */
@@ -159,7 +179,11 @@ public class MongoConfigurationBuilder {
             @Override
             public MongoClientOptions getClientOptions() {
                 if (MongoConfigurationBuilder.this.options == null) {
-                    options(MongoClientOptions.builder().build());
+                    Builder builder = MongoClientOptions.builder();
+                    if (MongoConfigurationBuilder.this.serverMonitorListeners.isEmpty() == false) {
+                        MongoConfigurationBuilder.this.serverMonitorListeners.forEach(builder::addServerMonitorListener);
+                    }
+                    options(builder.build());
                 }
                 return MongoConfigurationBuilder.this.options;
             }
