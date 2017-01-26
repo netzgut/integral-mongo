@@ -42,7 +42,7 @@ public class MongoConfigurationBuilder {
      * Set the host of the MongoDB server
      */
     public MongoConfigurationBuilder host(String host) {
-        if (host == null || host.length() == 0) {
+        if (host == null || host.isEmpty()) {
             throw new IllegalArgumentException("Host can't be blank.");
         }
 
@@ -82,7 +82,7 @@ public class MongoConfigurationBuilder {
      * @return Builder object to allow for chaining of calls
      */
     public MongoConfigurationBuilder databaseName(String databaseName) {
-        if (databaseName == null || databaseName.length() == 0) {
+        if (databaseName == null || databaseName.isEmpty()) {
             throw new IllegalArgumentException("DatabaseName shouldn't be blank.");
         }
 
@@ -112,11 +112,11 @@ public class MongoConfigurationBuilder {
      * based on the provided username/database/password
      */
     public MongoConfigurationBuilder addCredential(String username, String database, String password) {
-        if (username == null || username.length() == 0) {
+        if (username == null || username.isEmpty()) {
             throw new IllegalArgumentException("Can't add null credentials (username).");
         }
 
-        if (database == null || database.length() == 0) {
+        if (database == null || database.isEmpty()) {
             throw new IllegalArgumentException("Can't add null credentials (database).");
         }
 
