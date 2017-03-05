@@ -51,7 +51,7 @@ dependencies {
     provided "com.google.code.gson:gson:${versions.gson}"
 }
 
-task wrapper(type: Wrapper) { gradleVersion = '3.2.1' }
+task wrapper(type: Wrapper) { gradleVersion = '3.4.1' }
 
 task pom {
     doLast {
