@@ -29,10 +29,10 @@ repositories {
 
 project.ext.versions = [
     // compile
-    slf4j: '1.7.21',
+    slf4j: '1.7.24',
     tapestry: '5.4.1',
-    mongodb: '3.4.1',
-    fastClasspathScanner: '2.0.9',
+    mongodb: '3.4.2',
+    fastClasspathScanner: '2.0.17',
     //provided
     jackson: '2.8.5',
     gson: '2.8.0'
