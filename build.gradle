@@ -34,7 +34,7 @@ project.ext.versions = [
     mongodb: '3.4.2',
     fastClasspathScanner: '2.0.17',
     //provided
-    jackson: '2.8.5',
+    jackson: '2.8.7',
     gson: '2.8.0'
 ]
 
@@ -48,6 +48,7 @@ dependencies {
 
     provided "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
     provided "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}"
+    provided "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${versions.jackson}"
     provided "com.google.code.gson:gson:${versions.gson}"
 }
 
