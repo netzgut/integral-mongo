@@ -16,6 +16,7 @@
 package net.netzgut.integral.mongo.internal.converter;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.bson.Document;
 
@@ -33,21 +34,16 @@ public class JacksonConverterImplementation implements MongoConverter {
     }
 
     @Override
-    public <T extends Serializable> T entityFrom(Document document, Class<T> clazz) {
+    public <T extends Serializable> T entityFrom(Document document, Class<T> entityClass) {
+        Objects.requireNonNull(document, "Document musn't be null");
+        Objects.requireNonNull(entityClass, "Entity Class musn't be null");
 
-        if (document == null || clazz == null) {
-            return null;
-        }
-
-        return this.objectMapper.convertValue(document, clazz);
+        return this.objectMapper.convertValue(document, entityClass);
     }
 
     @Override
     public Document documentFrom(Serializable data) {
-
-        if (data == null) {
-            return null;
-        }
+        Objects.requireNonNull(data, "Data musn't be null");
 
         return this.objectMapper.convertValue(data, Document.class);
     }

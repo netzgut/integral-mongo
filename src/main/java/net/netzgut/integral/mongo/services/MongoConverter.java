@@ -16,22 +16,22 @@
 package net.netzgut.integral.mongo.services;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.bson.Document;
 
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoIterable;
 
 public interface MongoConverter {
 
     /**
      * Converts a {@link org.bson.Document} to an entity.
      */
-    <T extends Serializable> T entityFrom(Document document, Class<T> clazz);
+    <T extends Serializable> T entityFrom(Document document, Class<T> entityClass);
 
     /**
      * Converts an entity to a {@link org.bson.Document}.
@@ -41,26 +41,35 @@ public interface MongoConverter {
     /**
      * Converts the content of an {@link java.lang.Iterable} to a List of entities.
      */
-    default <T extends Serializable> List<T> entitiesFrom(FindIterable<Document> iterable, Class<T> entityClass) {
-        if (iterable == null || entityClass == null) {
-            return Collections.emptyList();
-        }
+    default <T extends Serializable> List<T> entitiesFrom(MongoIterable<Document> iterable, Class<T> entityClass) {
+        return entitiesStreamFrom(iterable, entityClass).collect(Collectors.toList());
+    }
 
-        List<T> entities = new ArrayList<>();
-        iterable.forEach((Consumer<Document>) (Document document) -> entities.add(this.entityFrom(document,
-                                                                                                  entityClass)));
+    /**
+     * Provides a {@link Stream} to the entities.
+     */
+    default <T extends Serializable> Stream<T> entitiesStreamFrom(MongoIterable<Document> iterable,
+                                                                  Class<T> entityClass) {
+        Objects.requireNonNull(iterable, "Iterable musn't be null");
+        Objects.requireNonNull(entityClass, "Entity Class musn't be null");
 
-        return entities;
+        return StreamSupport.stream(iterable.spliterator(), false)
+                            .map(document -> this.entityFrom(document, entityClass));
     }
 
     /**
      * Converts a List of entities to a List of {@link org.bson.Document}.
      */
     default List<Document> documentsFrom(List<? extends Serializable> data) {
-        if (data == null || data.size() == 0) {
-            return Collections.emptyList();
-        }
+        return documentsStreamFrom(data).collect(Collectors.toList());
+    }
 
-        return data.stream().map(this::documentFrom).collect(Collectors.toList());
+    /**
+     * Provides a {@link Stream} to the documents.
+     */
+    default Stream<Document> documentsStreamFrom(List<? extends Serializable> data) {
+        Objects.requireNonNull(data, "Data musn't be null");
+
+        return data.stream().map(this::documentFrom);
     }
 }
