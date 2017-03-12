@@ -7,7 +7,7 @@ import org.bson.conversions.Bson;
 
 import com.mongodb.client.result.UpdateResult;
 
-public interface MongoPersister {
+public interface MongoODM {
 
     <T extends Serializable> void persist(T entity);
 
@@ -18,5 +18,7 @@ public interface MongoPersister {
     <T extends Serializable> UpdateResult replace(Bson filter, T entity);
 
     <T extends Serializable> UpdateResult upsert(Bson filter, T entity);
+
+    <T extends Serializable> T findFirst(Bson filter, Class<T> entityClass);
 
 }

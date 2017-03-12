@@ -22,9 +22,9 @@ import org.apache.tapestry5.ioc.services.FactoryDefaults;
 import org.apache.tapestry5.ioc.services.SymbolProvider;
 
 import net.netzgut.integral.mongo.configuration.MongoConfigurationSymbols;
-import net.netzgut.integral.mongo.internal.services.MongoPersisterImplementation;
+import net.netzgut.integral.mongo.internal.services.MongoODMImplementation;
 import net.netzgut.integral.mongo.internal.services.MongoServiceImplementation;
-import net.netzgut.integral.mongo.services.MongoPersister;
+import net.netzgut.integral.mongo.services.MongoODM;
 import net.netzgut.integral.mongo.services.MongoService;
 import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
 import net.netzgut.integral.mongo.strategies.CollectionNamingStrategyDefaultImplementation;
@@ -44,6 +44,6 @@ public class MongoModule {
     public static void bind(ServiceBinder binder) {
         binder.bind(CollectionNamingStrategy.class, CollectionNamingStrategyDefaultImplementation.class);
         binder.bind(MongoService.class, MongoServiceImplementation.class);
-        binder.bind(MongoPersister.class, MongoPersisterImplementation.class);
+        binder.bind(MongoODM.class, MongoODMImplementation.class);
     }
 }

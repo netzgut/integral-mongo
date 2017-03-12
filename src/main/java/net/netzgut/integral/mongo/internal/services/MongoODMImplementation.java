@@ -11,15 +11,15 @@ import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
 
 import net.netzgut.integral.mongo.services.MongoConverter;
-import net.netzgut.integral.mongo.services.MongoPersister;
+import net.netzgut.integral.mongo.services.MongoODM;
 import net.netzgut.integral.mongo.services.MongoService;
 
-public class MongoPersisterImplementation implements MongoPersister {
+public class MongoODMImplementation implements MongoODM {
 
     private final MongoService   mongo;
     private final MongoConverter converter;
 
-    public MongoPersisterImplementation(MongoService mongo, MongoConverter converter) {
+    public MongoODMImplementation(MongoService mongo, MongoConverter converter) {
         this.mongo = mongo;
         this.converter = converter;
     }
@@ -47,6 +47,17 @@ public class MongoPersisterImplementation implements MongoPersister {
         Document document = this.converter.documentFrom(entity);
         Bson update = Filters.eq("$set", document);
         return collection.updateOne(filter, update, new UpdateOptions().upsert(true));
+    }
+
+    @Override
+    public <T extends Serializable> T findFirst(Bson filter, Class<T> entityClass) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        Document document = collection.find(filter).limit(1).first();
+        if (document == null) {
+            return null;
+        }
+        return this.converter.entityFrom(document, entityClass);
+
     }
 
 }
