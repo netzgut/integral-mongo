@@ -17,8 +17,11 @@ package net.netzgut.integral.mongo.internal.services;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.bson.Document;
@@ -41,12 +44,15 @@ import net.netzgut.integral.mongo.strategies.CollectionNamingStrategy;
 
 public class MongoServiceImplementation implements MongoService, Closeable {
 
-    private static final Logger            log = LoggerFactory.getLogger(MongoServiceImplementation.class);
+    private static final Logger                              log                         =
+        LoggerFactory.getLogger(MongoServiceImplementation.class);
 
-    private final MongoClient              mongoClient;
-    private final MongoDatabase            defaultDatabase;
+    private final MongoClient                                mongoClient;
+    private final MongoDatabase                              defaultDatabase;
+    private final CollectionNamingStrategy                   collectionNamingStrategy;
 
-    private final CollectionNamingStrategy collectionNamingStrategy;
+    private final Map<Class<? extends Serializable>, String> collectionNameCacheByClass  = new HashMap<>();
+    private final Map<String, String>                        collectionNameCacheByString = new HashMap<>();
 
     public MongoServiceImplementation(MongoConfiguration configuration,
                                       CollectionNamingStrategy collectionNamingStrategy) {
@@ -82,10 +88,16 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public String getCollectionName(Class<?> entityClass, boolean ignoreNamingStrategy) {
+    public String getCollectionName(Class<? extends Serializable> entityClass, boolean ignoreNamingStrategy) {
         if (entityClass == null) {
             log.error("Entity Class can't be null");
             throw new IllegalArgumentException("Entity Class can't be null");
+        }
+
+        if (ignoreNamingStrategy == false
+            && this.collectionNamingStrategy.isCacheable()
+            && this.collectionNameCacheByClass.containsKey(entityClass)) {
+            return this.collectionNameCacheByClass.get(entityClass);
         }
 
         Collection annotation = entityClass.getAnnotation(Collection.class);
@@ -105,12 +117,27 @@ public class MongoServiceImplementation implements MongoService, Closeable {
             return collectionName;
         }
 
-        return getCollectionName(collectionName);
+        String realCollectionName = getCollectionName(collectionName);
+        if (this.collectionNamingStrategy.isCacheable()) {
+            this.collectionNameCacheByClass.put(entityClass, collectionName);
+        }
+
+        return realCollectionName;
     }
 
     @Override
     public String getCollectionName(String collectionName) {
-        return this.collectionNamingStrategy.name(collectionName);
+        if (this.collectionNamingStrategy.isCacheable()
+            && this.collectionNameCacheByString.containsKey(collectionName)) {
+            return this.collectionNameCacheByString.get(collectionName);
+        }
+
+        String realCollectionName = this.collectionNamingStrategy.name(collectionName);
+
+        if (this.collectionNamingStrategy.isCacheable()) {
+            this.collectionNameCacheByString.put(collectionName, realCollectionName);
+        }
+        return realCollectionName;
     }
 
     @Override
@@ -160,7 +187,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public void setupCollection(MongoDatabase db, Class<?> entityClass) {
+    public void setupCollection(MongoDatabase db, Class<? extends Serializable> entityClass) {
         if (db == null) {
             log.error("Database can't be null");
             throw new IllegalArgumentException("Database can't be null");
@@ -176,7 +203,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
-    public void setupCollection(MongoDatabase db, Class<?> entityClass, String collectionName) {
+    public void setupCollection(MongoDatabase db, Class<? extends Serializable> entityClass, String collectionName) {
         if (db == null) {
             log.error("Database can't be null");
             throw new IllegalArgumentException("Database can't be null");
@@ -201,6 +228,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void autoSetup(MongoDatabase db, String... packageRestrictions) {
         log.debug("autoSetup(DB: {}, Package restrictions: {}", db.getName(), packageRestrictions);
@@ -208,7 +236,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
         new FastClasspathScanner(packageRestrictions).matchClassesWithAnnotation(Collection.class, matchingClass -> {
             Collection annotation = matchingClass.getAnnotation(Collection.class);
             if (annotation.autoSetup()) {
-                this.setupCollection(db, matchingClass, annotation.value());
+                setupCollection(db, (Class<? extends Serializable>) matchingClass, annotation.value());
             }
         });
     }
@@ -218,7 +246,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
         this.mongoClient.close();
     }
 
-    private void setupIndexes(Class<?> entityClass, MongoCollection<Document> collection) {
+    private void setupIndexes(Class<? extends Serializable> entityClass, MongoCollection<Document> collection) {
         if (entityClass == null) {
             log.error("Entity Class can't be null");
             throw new IllegalArgumentException("Entity Class can't be null");
