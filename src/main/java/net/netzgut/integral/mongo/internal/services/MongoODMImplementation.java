@@ -6,6 +6,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.result.UpdateResult;
@@ -57,7 +58,24 @@ public class MongoODMImplementation implements MongoODM {
             return null;
         }
         return this.converter.entityFrom(document, entityClass);
+    }
 
+    @Override
+    public <T extends Serializable> long count(Class<T> entityClass) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        return collection.count();
+    }
+
+    @Override
+    public <T extends Serializable> long count(Bson filter, Class<T> entityClass) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        return collection.count(filter);
+    }
+
+    @Override
+    public <T extends Serializable> long count(Bson filter, Class<T> entityClass, CountOptions options) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        return collection.count(filter, options);
     }
 
 }

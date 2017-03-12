@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.bson.conversions.Bson;
 
+import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.result.UpdateResult;
 
 public interface MongoODM {
@@ -20,5 +21,11 @@ public interface MongoODM {
     <T extends Serializable> UpdateResult upsert(Bson filter, T entity);
 
     <T extends Serializable> T findFirst(Bson filter, Class<T> entityClass);
+
+    <T extends Serializable> long count(Class<T> entityClass);
+
+    <T extends Serializable> long count(Bson filter, Class<T> entityClass);
+
+    <T extends Serializable> long count(Bson filter, Class<T> entityClass, CountOptions options);
 
 }
