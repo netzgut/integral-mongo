@@ -18,11 +18,14 @@ package net.netzgut.integral.mongo.internal.services;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.bson.Document;
 import org.slf4j.Logger;
@@ -100,7 +103,7 @@ public class MongoServiceImplementation implements MongoService, Closeable {
             return this.collectionNameCacheByClass.get(entityClass);
         }
 
-        Collection annotation = entityClass.getAnnotation(Collection.class);
+        Collection annotation = findSingleAnnotation(Collection.class, entityClass);
 
         if (annotation == null) {
             String message = String.format("Annotation '@Collection' not present on class '%s'", entityClass.getName());
@@ -257,21 +260,67 @@ public class MongoServiceImplementation implements MongoService, Closeable {
             throw new IllegalArgumentException("Collection can't be null");
         }
 
-        Index[] indexes = entityClass.getAnnotationsByType(Index.class);
-        if (indexes != null) {
-            Stream.of(indexes) //
-                  .filter(index -> index.value() != null) //
-                  .filter(index -> index.value().length() > 0) //
-                  .forEach(index -> {
-                      Document indexDocument = new Document();
-                      indexDocument.put(index.value(), index.direction());
+        findAllAnnotations(Index.class, entityClass).stream().filter(index -> Objects.nonNull(index.value())) //
+                                                    .filter(index -> index.value().isEmpty() == false) //
+                                                    .forEach(index -> {
+                                                        Document indexDocument = new Document();
+                                                        indexDocument.put(index.value(), index.direction());
 
-                      IndexOptions options = new IndexOptions();
-                      options.unique(index.unique());
-                      options.background(index.background());
-                      collection.createIndex(indexDocument, options);
-                  });
+                                                        IndexOptions options = new IndexOptions();
+                                                        options.unique(index.unique());
+                                                        options.background(index.background());
+                                                        collection.createIndex(indexDocument, options);
+                                                    });
+
+    }
+
+    private <T extends Annotation> T findSingleAnnotation(Class<T> annotationClass, Class<?> clazz) {
+        T foundAnnotation = clazz.getAnnotation(annotationClass);
+
+        if (foundAnnotation != null) {
+            return foundAnnotation;
         }
+
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces == null) {
+            return null;
+        }
+        List<T> annotations = Arrays.asList(interfaces).stream() //
+                                    .map(iface -> findSingleAnnotation(annotationClass, iface)) //
+                                    .filter(Objects::nonNull) //
+                                    .collect(Collectors.toList());
+        if (annotations.isEmpty()) {
+            return null;
+        }
+        if (annotations.size() != 1) {
+            throw new RuntimeException("Not more than one @Collection annotation is allowed to exists in the whole graph of an entity! Found: "
+                                       + annotations.size());
+        }
+
+        return annotations.get(0);
+    }
+
+    private <T extends Annotation> List<T> findAllAnnotations(Class<T> annotationClass, Class<?> clazz) {
+
+        List<T> allAnnotations = new ArrayList<>();
+
+        // 1. Check for annotation in clazz (and inherited class)
+        T[] foundAnnotations = clazz.getAnnotationsByType(annotationClass);
+
+        if (foundAnnotations != null) {
+            allAnnotations.addAll(Arrays.asList(foundAnnotations));
+        }
+
+        Class<?>[] interfaces = clazz.getInterfaces();
+        if (interfaces != null) {
+            List<T> annotations =
+                Arrays.asList(interfaces).stream() //
+                      .map(iface -> findAllAnnotations(annotationClass, iface)).filter(Objects::nonNull) //
+                      .collect(ArrayList::new, List::addAll, List::addAll);
+            allAnnotations.addAll(annotations);
+        }
+
+        return allAnnotations;
     }
 
 }
