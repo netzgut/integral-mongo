@@ -36,7 +36,7 @@ public interface MongoConverter {
     /**
      * Converts an entity to a {@link org.bson.Document}.
      */
-    Document documentFrom(Serializable json);
+    Document documentFrom(Serializable entity);
 
     /**
      * Converts the content of an {@link java.lang.Iterable} to a List of entities.
@@ -60,16 +60,16 @@ public interface MongoConverter {
     /**
      * Converts a List of entities to a List of {@link org.bson.Document}.
      */
-    default List<Document> documentsFrom(List<? extends Serializable> data) {
-        return documentsStreamFrom(data).collect(Collectors.toList());
+    default List<Document> documentsFrom(List<? extends Serializable> entities) {
+        return documentsStreamFrom(entities).collect(Collectors.toList());
     }
 
     /**
      * Provides a {@link Stream} to the documents.
      */
-    default Stream<Document> documentsStreamFrom(List<? extends Serializable> data) {
-        Objects.requireNonNull(data, "Data musn't be null");
+    default Stream<Document> documentsStreamFrom(List<? extends Serializable> entities) {
+        Objects.requireNonNull(entities, "Entities musn't be null");
 
-        return data.stream().map(this::documentFrom);
+        return entities.stream().map(this::documentFrom);
     }
 }
