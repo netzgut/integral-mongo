@@ -22,4 +22,9 @@ public class CollectionNamingStrategyDefaultImplementation implements Collection
         return originalName;
     }
 
+    @Override
+    public boolean isCacheable() {
+        return true;
+    }
+
 }

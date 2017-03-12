@@ -18,4 +18,8 @@ package net.netzgut.integral.mongo.strategies;
 public interface CollectionNamingStrategy {
 
     String name(String originalName);
+
+    default boolean isCacheable() {
+        return false;
+    }
 }
