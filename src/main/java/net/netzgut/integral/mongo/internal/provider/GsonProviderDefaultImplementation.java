@@ -21,9 +21,15 @@ import net.netzgut.integral.mongo.provider.GsonProvider;
 
 public class GsonProviderDefaultImplementation implements GsonProvider {
 
+    private final Gson gson;
+
+    public GsonProviderDefaultImplementation() {
+        this.gson = new Gson();
+    }
+
     @Override
     public Gson provide() {
-        return new Gson();
+        return this.gson;
     }
 
 }
