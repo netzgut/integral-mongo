@@ -2,6 +2,8 @@ package net.netzgut.integral.mongo.services;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.bson.conversions.Bson;
 
@@ -20,7 +22,13 @@ public interface MongoODM {
 
     <T extends Serializable> UpdateResult upsert(Bson filter, T entity);
 
+    <T extends Serializable> UpdateResult update(Bson filter, T entity);
+
+    <T extends Serializable> UpdateResult update(Bson filter, Class<T> entityClass, Map<String, Object> updateMap);
+
     <T extends Serializable> T findFirst(Bson filter, Class<T> entityClass);
+
+    <T extends Serializable> Stream<T> find(Bson filter, Class<T> entityClass);
 
     <T extends Serializable> long count(Class<T> entityClass);
 

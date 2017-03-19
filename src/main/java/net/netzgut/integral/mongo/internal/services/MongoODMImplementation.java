@@ -1,10 +1,13 @@
 package net.netzgut.integral.mongo.internal.services;
 
 import java.io.Serializable;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
@@ -48,6 +51,31 @@ public class MongoODMImplementation implements MongoODM {
         Document document = this.converter.documentFrom(entity);
         Bson update = Filters.eq("$set", document);
         return collection.updateOne(filter, update, new UpdateOptions().upsert(true));
+    }
+
+    @Override
+    public <T extends Serializable> UpdateResult update(Bson filter, T entity) {
+        Class<? extends Serializable> entityClass = entity.getClass();
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        Document document = this.converter.documentFrom(entity);
+        Bson update = Filters.eq("$set", document);
+        return collection.updateOne(filter, update);
+    }
+
+    @Override
+    public <T extends Serializable> UpdateResult update(Bson filter,
+                                                        Class<T> entityClass,
+                                                        Map<String, Object> updateMap) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        Bson update = Filters.eq("$set", new Document(updateMap));
+        return collection.updateOne(filter, update);
+    }
+
+    @Override
+    public <T extends Serializable> Stream<T> find(Bson filter, Class<T> entityClass) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        FindIterable<Document> find = collection.find(filter);
+        return this.converter.entitiesStreamFrom(find, entityClass);
     }
 
     @Override
