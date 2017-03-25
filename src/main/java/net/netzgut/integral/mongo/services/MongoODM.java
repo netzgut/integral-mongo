@@ -30,6 +30,8 @@ public interface MongoODM {
 
     <T extends Serializable> Stream<T> find(Bson filter, Class<T> entityClass);
 
+    <T extends Serializable> Stream<T> findAll(Class<T> entityClass);
+
     <T extends Serializable> long count(Class<T> entityClass);
 
     <T extends Serializable> long count(Bson filter, Class<T> entityClass);

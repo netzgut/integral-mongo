@@ -89,6 +89,13 @@ public class MongoODMImplementation implements MongoODM {
     }
 
     @Override
+    public <T extends Serializable> Stream<T> findAll(Class<T> entityClass) {
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        FindIterable<Document> find = collection.find();
+        return this.converter.entitiesStreamFrom(find, entityClass);
+    }
+
+    @Override
     public <T extends Serializable> long count(Class<T> entityClass) {
         MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
         return collection.count();
