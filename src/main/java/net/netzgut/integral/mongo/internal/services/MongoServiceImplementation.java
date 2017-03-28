@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.apache.tapestry5.ioc.services.RegistryShutdownHub;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +59,8 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     private final Map<String, String>                        collectionNameCacheByString = new HashMap<>();
 
     public MongoServiceImplementation(MongoConfiguration configuration,
-                                      CollectionNamingStrategy collectionNamingStrategy) {
+                                      CollectionNamingStrategy collectionNamingStrategy,
+                                      RegistryShutdownHub shutdownHub) {
         this.collectionNamingStrategy = collectionNamingStrategy;
         if (configuration.getCredentials().isEmpty()) {
             this.mongoClient = new MongoClient(configuration.getServerAddress(), configuration.getClientOptions());
@@ -69,6 +71,16 @@ public class MongoServiceImplementation implements MongoService, Closeable {
                                                configuration.getClientOptions());
         }
         this.defaultDatabase = this.mongoClient.getDatabase(configuration.getDatabaseName());
+
+        // call Closeable.close() on registry shutdown
+        shutdownHub.addRegistryWillShutdownListener(() -> {
+            try {
+                close();
+            }
+            catch (IOException e) {
+                log.warn("could not close MongoClient", e);
+            }
+        });
     }
 
     @Override
