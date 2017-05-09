@@ -19,6 +19,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bson.codecs.Codec;
+import org.bson.codecs.configuration.CodecRegistries;
+import org.bson.codecs.configuration.CodecRegistry;
+
+import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoClientOptions.Builder;
 import com.mongodb.MongoCredential;
@@ -33,6 +38,7 @@ public class MongoConfigurationBuilder {
     private MongoClientOptions                options;
     private final List<ServerMonitorListener> serverMonitorListeners = new ArrayList<>();
     private final List<MongoCredential>       credentials            = new ArrayList<>();
+    private final List<Codec<?>>              codecs                 = new ArrayList<>();
 
     /**
      * Creates a builder for {@link net.netzgut.integral.mongo.services.MongoServiceImplementation}
@@ -111,8 +117,29 @@ public class MongoConfigurationBuilder {
     }
 
     /**
+     * Adds a {@link org.bson.codecs.configuration.Codec} to be added to the codec
+     * registry if no options are provided.
+     */
+    public MongoConfigurationBuilder addCodec(Codec<?> codec) {
+        if (codec == null) {
+            throw new IllegalArgumentException("Can't add null codec.");
+        }
+
+        if (this.options != null) {
+            throw new IllegalStateException("MongoClient options already set. "
+                                            + "A Codec has to be included into the options "
+                                            + "so either add it to your provided options or add a Codec "
+                                            + "and use the default MongoClientOptions this builder will build.");
+        }
+
+        this.codecs.add(codec);
+
+        return this;
+    }
+
+    /**
      * Adds a {@link com.mongodb.MongoCredential} to the list of credentials
-     * based on the provided username/database/password
+     * based on the provided username/database/password.
      */
     public MongoConfigurationBuilder addCredential(String username, String database, String password) {
         if (username == null || username.isEmpty()) {
@@ -129,7 +156,7 @@ public class MongoConfigurationBuilder {
     }
 
     /**
-     * Sets the {@link com.mongodb.MongoClientOptions}
+     * Sets the {@link com.mongodb.MongoClientOptions}.
      */
     public MongoConfigurationBuilder options(MongoClientOptions options) {
         this.options = options;
@@ -143,10 +170,10 @@ public class MongoConfigurationBuilder {
      */
     public MongoConfigurationBuilder serverMonitor(ServerMonitorListener... monitors) {
         if (this.options != null) {
-            throw new IllegalArgumentException("MongoClient options already set. "
-                                               + "The ServerMonitorListener has to be included into the options "
-                                               + "so either add it to your provided options or set the monitor "
-                                               + "and use the default MongoClientOptions this builder will build.");
+            throw new IllegalStateException("MongoClient options already set. "
+                                            + "The ServerMonitorListener has to be included into the options "
+                                            + "so either add it to your provided options or set the monitor "
+                                            + "and use the default MongoClientOptions this builder will build.");
         }
 
         this.serverMonitorListeners.addAll(Arrays.asList(monitors));
@@ -179,12 +206,24 @@ public class MongoConfigurationBuilder {
             @Override
             public MongoClientOptions getClientOptions() {
                 if (MongoConfigurationBuilder.this.options == null) {
+
                     Builder builder = MongoClientOptions.builder();
                     if (MongoConfigurationBuilder.this.serverMonitorListeners.isEmpty() == false) {
                         MongoConfigurationBuilder.this.serverMonitorListeners.forEach(builder::addServerMonitorListener);
                     }
+
+                    if (MongoConfigurationBuilder.this.codecs.isEmpty() == false) {
+                        CodecRegistry customRegistry =
+                            CodecRegistries.fromCodecs(MongoConfigurationBuilder.this.codecs);
+                        CodecRegistry defaultRegistry = MongoClient.getDefaultCodecRegistry();
+                        CodecRegistry combinedRegistry =
+                            CodecRegistries.fromRegistries(customRegistry, defaultRegistry);
+                        builder.codecRegistry(combinedRegistry);
+                    }
+
                     options(builder.build());
                 }
+
                 return MongoConfigurationBuilder.this.options;
             }
         };
