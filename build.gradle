@@ -8,11 +8,11 @@ plugins {
     id 'java'
     id 'maven'
     id 'nebula.provided-base' version '3.1.0'
-    id 'com.github.hierynomus.license' version '0.13.1'
+    id 'com.github.hierynomus.license' version '0.14.0'
 }
 
 group 'net.netzgut.integral'
-version '0.0.2-SNAPSHOT'
+version '0.0.3-SNAPSHOT'
 description 'A MongoDB Driver helper'
 
 project.ext.inceptionYear = '2016'
@@ -29,10 +29,10 @@ repositories {
 
 project.ext.versions = [
     // compile
-    slf4j: '1.7.24',
-    tapestry: '5.4.1',
+    slf4j: '1.7.25',
+    tapestry: '5.4.3',
     mongodb: '3.4.2',
-    fastClasspathScanner: '2.0.17',
+    fastClasspathScanner: '2.0.21',
     //provided
     jackson: '2.8.7',
     gson: '2.8.0'
