@@ -28,7 +28,7 @@ import org.bson.types.Decimal128;
  * Codec for {@link java.math.BigDecimal}.
  * Needs MongoDB 3.4 to work due to needing Decimal128-support.
  */
-public class BigDecimalDecimal128Codec implements Codec<BigDecimal> {
+public class BigDecimalCodec implements Codec<BigDecimal> {
 
     @Override
     public Class<BigDecimal> getEncoderClass() {

@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import net.netzgut.integral.mongo.internal.converter.DocumentMixIn;
+import net.netzgut.integral.mongo.internal.jackson.DocumentMixIn;
 import net.netzgut.integral.mongo.provider.ObjectMapperProvider;
 
 public class ObjectMapperProviderDefaultImplementation implements ObjectMapperProvider {
@@ -37,7 +37,8 @@ public class ObjectMapperProviderDefaultImplementation implements ObjectMapperPr
                                               .setSerializationInclusion(Include.NON_NULL) //
                                               .addMixIn(Document.class, DocumentMixIn.class) //
                                               .registerModule(new JavaTimeModule()) //
-                                              .registerModule(new Jdk8Module());
+                                              .registerModule(new Jdk8Module()) //
+                                              .registerModule(new BsonTypesModule());
     }
 
     @Override
