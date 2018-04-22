@@ -30,11 +30,11 @@ project.ext.versions = [
     // compile
     slf4j: '1.7.25',
     tapestry: '5.4.3',
-    mongodb: '3.4.2',
-    fastClasspathScanner: '2.0.21',
+    mongodb: '3.4.3',
+    fastClasspathScanner: '2.18.2',
     //provided
     jackson: '2.8.7',
-    gson: '2.8.0'
+    gson: '2.8.2'
 ]
 
 dependencies {
