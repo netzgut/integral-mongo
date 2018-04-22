@@ -7,7 +7,6 @@ buildscript {
 plugins {
     id 'java'
     id 'maven'
-    id 'nebula.provided-base' version '3.1.0'
     id 'com.github.hierynomus.license' version '0.14.0'
 }
 
@@ -46,10 +45,11 @@ dependencies {
 
     compile "io.github.lukehutch:fast-classpath-scanner:${versions.fastClasspathScanner}"
 
-    provided "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
-    provided "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}"
-    provided "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${versions.jackson}"
-    provided "com.google.code.gson:gson:${versions.gson}"
+    compileOnly "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
+    compileOnly "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${versions.jackson}"
+    compileOnly "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:${versions.jackson}"
+
+    compileOnly "com.google.code.gson:gson:${versions.gson}"
 }
 
 task wrapper(type: Wrapper) { gradleVersion = '4.6' }
@@ -78,10 +78,35 @@ task pom {
                 }
             }
         }.withXml { xmlProvider ->
+            // We need to add the compileOnly dependencies manually, maven-plugin isn't supporting it.
+            project.configurations.compileOnly.allDependencies.each { dep ->
+                asNode().dependencies[0].appendNode('dependency').with {
+                    it.appendNode('groupId', dep.group)
+                    it.appendNode('artifactId', dep.name)
+                    it.appendNode('version', dep.version)
+                    it.appendNode('scope', 'provided')
+                }
+            }
+
+            // Sort the dependencies so the order wont change with every invocation
+            def dependenciesNodeList = node.get('dependencies')
+            if (dependenciesNodeList) {
+                def dependenciesNode = dependenciesNodeList.get(0)
+                def dependencyNodeList = dependenciesNode.get('dependency')
+                def sorted = dependencyNodeList.sort { a, b ->
+                    def r = a.get('groupId').text().trim().compareTo(b.get('groupId').text().trim())
+                    if (r != 0) return r
+                    return a.get('artifactId').text().trim().compareTo(b.get('artifactId').text().trim())
+                }
+                dependenciesNode.children().removeAll(dependenciesNode.children())
+                sorted.each { dependenciesNode.append(it) }
+            }
+            
+            // Plugins
             def plugins = xmlProvider.asNode().appendNode('build').appendNode('plugins')
             def mavenCompilerPlugin = plugins.appendNode('plugin')
             mavenCompilerPlugin.appendNode('artifactId').value = 'maven-compiler-plugin'
-            mavenCompilerPlugin.appendNode('version').value = '3.1'
+            mavenCompilerPlugin.appendNode('version').value = '3.5.1'
             def mavenCompilerPluginConfiguration = mavenCompilerPlugin.appendNode('configuration')
             mavenCompilerPluginConfiguration.appendNode('source').value = sourceCompatibility
             mavenCompilerPluginConfiguration.appendNode('target').value = targetCompatibility
