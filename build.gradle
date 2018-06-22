@@ -11,7 +11,7 @@ plugins {
 }
 
 group 'net.netzgut.integral'
-version '0.0.4'
+version '0.0.5-SNAPSHOT'
 description 'A MongoDB Driver helper'
 
 project.ext.inceptionYear = '2016'
