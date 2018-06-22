@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.netzgut.integral</groupId>
   <artifactId>integral-mongo</artifactId>
-  <version>0.0.4-SNAPSHOT</version>
+  <version>0.0.4</version>
   <name>integral-mongo</name>
   <description>A MongoDB Driver helper</description>
   <url>https://github.com/netzgut/integral-mongo</url>
