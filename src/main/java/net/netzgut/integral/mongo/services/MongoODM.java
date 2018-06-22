@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.bson.conversions.Bson;
 
 import com.mongodb.client.model.CountOptions;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 public interface MongoODM {
@@ -32,6 +33,8 @@ public interface MongoODM {
     default <T extends Serializable> void persist(List<T> entities) {
         entities.forEach(this::persist);
     }
+
+    <T extends Serializable> DeleteResult deleteAll(Bson filter, T entity);
 
     <T extends Serializable> UpdateResult replace(Bson filter, T entity);
 

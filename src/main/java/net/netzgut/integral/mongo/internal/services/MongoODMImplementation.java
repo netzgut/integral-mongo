@@ -27,6 +27,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
 
 import net.netzgut.integral.mongo.services.MongoConverter;
@@ -49,6 +50,13 @@ public class MongoODMImplementation implements MongoODM {
         MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
         Document document = this.converter.documentFrom(entity);
         collection.insertOne(document);
+    }
+
+    @Override
+    public <T extends Serializable> DeleteResult deleteAll(Bson filter, T entity) {
+        Class<? extends Serializable> entityClass = entity.getClass();
+        MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
+        return collection.deleteMany(filter);
     }
 
     @Override
