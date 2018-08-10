@@ -34,7 +34,7 @@ public interface MongoODM {
         entities.forEach(this::persist);
     }
 
-    <T extends Serializable> DeleteResult deleteAll(Bson filter, T entity);
+    <T extends Serializable> DeleteResult deleteAll(Bson filter, Class<T> entityClass);
 
     <T extends Serializable> UpdateResult replace(Bson filter, T entity);
 

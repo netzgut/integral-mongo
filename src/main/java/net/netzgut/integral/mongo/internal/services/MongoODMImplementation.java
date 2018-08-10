@@ -53,8 +53,7 @@ public class MongoODMImplementation implements MongoODM {
     }
 
     @Override
-    public <T extends Serializable> DeleteResult deleteAll(Bson filter, T entity) {
-        Class<? extends Serializable> entityClass = entity.getClass();
+    public <T extends Serializable> DeleteResult deleteAll(Bson filter, Class<T> entityClass) {
         MongoCollection<Document> collection = this.mongo.getCollection(entityClass);
         return collection.deleteMany(filter);
     }
