@@ -19,10 +19,16 @@ import java.io.Serializable;
 
 import org.bson.Document;
 
+import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
 public interface MongoService {
+
+    /**
+     * Returns the {@link com.mongodb.MongoClient} so you can use it directly.
+     */
+    MongoClient getMongoClient();
 
     /**
      * Returns the default database provided by the configuration.

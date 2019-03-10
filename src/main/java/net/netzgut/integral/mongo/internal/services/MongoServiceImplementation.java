@@ -84,6 +84,11 @@ public class MongoServiceImplementation implements MongoService, Closeable {
     }
 
     @Override
+    public MongoClient getMongoClient() {
+        return this.mongoClient;
+    }
+
+    @Override
     public MongoDatabase getDefaultDatabase() {
         if (this.defaultDatabase == null) {
             log.error("No default database set");
@@ -325,10 +330,10 @@ public class MongoServiceImplementation implements MongoService, Closeable {
 
         Class<?>[] interfaces = clazz.getInterfaces();
         if (interfaces != null) {
-            List<T> annotations =
-                Arrays.asList(interfaces).stream() //
-                      .map(iface -> findAllAnnotations(annotationClass, iface)).filter(Objects::nonNull) //
-                      .collect(ArrayList::new, List::addAll, List::addAll);
+            List<T> annotations = Arrays.asList(interfaces).stream() //
+                                        .map(iface -> findAllAnnotations(annotationClass, iface))
+                                        .filter(Objects::nonNull) //
+                                        .collect(ArrayList::new, List::addAll, List::addAll);
             allAnnotations.addAll(annotations);
         }
 
